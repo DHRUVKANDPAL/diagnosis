@@ -37,6 +37,14 @@ const DashboardPage = () => {
           <Button>Archive Button</Button>
         </div>
       </div>
+      <div className="mt-4">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
+          Ask Question Card
+          Meeting Card 
+        </div>
+      </div>
+      <div className="mt-8"></div>
+      Commit Log
     </div>
   );
 };
