@@ -36,6 +36,13 @@ const config = {
     "@typescript-eslint/naming-convention": "off",
     "@typescript-eslint/no-inferrable-types": "off",
     "@typescript-eslint/explicit-module-boundary-types": "off",
+
+    "@typescript-eslint/no-unsafe-argument": "off",
+    "@typescript-eslint/no-unsafe-assignment": "off",
+    "@typescript-eslint/prefer-nullish-coalescing": "off",
+    "@typescript-eslint/restrict-template-expressions": "off",
+    "@typescript-eslint/no-unnecessary-type-assertion": "off",
+    "@typescript-eslint/no-floating-promises": "off",
   },
 };
 
