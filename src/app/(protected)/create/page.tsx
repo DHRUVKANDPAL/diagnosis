@@ -1,8 +1,11 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import useRefetch from "@/hooks/use-refetch";
+import { api } from "@/trpc/react";
 import React from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 
 type FormInput = {
   repoUrl: string;
@@ -11,8 +14,24 @@ type FormInput = {
 };
 const CreatePage = () => {
   const { register, handleSubmit, reset } = useForm<FormInput>();
+  const createProject = api.project.createProject.useMutation();
+  const refetch=useRefetch();
   function onSubmit(data: FormInput) {
     window.alert(JSON.stringify(data));
+    createProject.mutate({
+      name: data.projectName,
+      githubUrl: data.repoUrl,
+      githubToken: data.githubToken,
+    },{
+      onSuccess: () => {
+        toast.success("Project created successfully")
+        refetch();
+        reset();
+      },
+      onError: () => {
+        toast.error("Failed to create project")
+      }
+    });
     return true;
   }
   return (
@@ -29,19 +48,21 @@ const CreatePage = () => {
         <div>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-2">
             <Input
-              placeholder="Repository URL"
-              {...register("repoUrl", { required: true })}
-              required
-            />
-            <Input
               placeholder="Project Name"
               {...register("projectName", { required: true })}
+            />
+            <Input
+              placeholder="Github Repository URL"
+              {...register("repoUrl", { required: true })}
               type="url"
               required
             />
-            <Input placeholder="GitHub Token (Optional) " {...register("githubToken")} />
+            <Input
+              placeholder="GitHub Token (Optional) "
+              {...register("githubToken")}
+            />
             <div className="h-2"></div>
-            <Button type="submit">Create Project</Button>
+            <Button type="submit" disabled={createProject.isPending}>Create Project</Button>
           </form>
         </div>
       </div>

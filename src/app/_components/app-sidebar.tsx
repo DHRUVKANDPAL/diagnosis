@@ -27,6 +27,9 @@ import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation";
 import { use } from "react";
 import { Button } from "@/components/ui/button";
+import useProject from "@/hooks/use-project";
+import useRefetch from "@/hooks/use-refetch";
+import Image from "next/image";
 
 // Menu items.
 const items = [
@@ -51,30 +54,18 @@ const items = [
     icon: CreditCard,
   },
 ];
-const Projects = [
-  {
-    name: "Project 1",
-  },
-  {
-    name: "Project 2",
-  },
-  {
-    name: "Project 3",
-  },
-];
+
 
 export function AppSidebar() {
   const pathname = usePathname();
   const { open } = useSidebar();
-
+  const {projects,project,projectId,setProjectId}=useProject();
   return (
     <Sidebar collapsible="icon" variant="floating" suppressHydrationWarning>
       <SidebarHeader suppressHydrationWarning>
-        <div className="flex items-center justify-center">
-          <h1 className="text-2xl font-extrabold text-primary">X</h1>
-          {open && (
-            <h1 className="text-2xl font-bold text-primary">tract</h1>
-          )}
+        <div className="flex items-center justify-start gap-1">
+          <Image src="/logo2.png" alt="logo" width={40} height={40}></Image>
+          {open && <h1 className="text-2xl font-bold text-primary">Diagnosis</h1>}
         </div>
       </SidebarHeader>
       <SidebarContent suppressHydrationWarning>
@@ -104,14 +95,17 @@ export function AppSidebar() {
           <SidebarGroupLabel>Your Projects</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {Projects.map((item) => (
+              {projects?.map((item) => (
                 <SidebarMenuItem key={item.name}>
                   <SidebarMenuButton asChild>
-                    <div>
+                    <div
+                      onClick={() => setProjectId(item.id)}
+                      className="cursor-pointer"
+                    >
                       <div
                         className={cn(
                           "flex size-6 items-center justify-center rounded-full border bg-white px-2 text-sm text-primary",
-                          { "bg-primary text-white": true },
+                          { "bg-primary text-white": item.id === projectId },
                         )}
                       >
                         {item.name[0]}
@@ -123,10 +117,7 @@ export function AppSidebar() {
               ))}
               <div className="h-2"></div>
               <SidebarMenuItem>
-                <Link
-                  href="/create"
-                  className="flex items-center gap-2"
-                >
+                <Link href="/create" className="flex items-center gap-2">
                   {open ? (
                     <Button size="sm" variant="outline" className="w-fit">
                       <Plus></Plus> Create Project
