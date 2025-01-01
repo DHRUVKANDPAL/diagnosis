@@ -1,10 +1,10 @@
 "use client";
 import {
   Bot,
-  ClipboardPlusIcon,
+  BrainCogIcon,
   CreditCard,
-  Heading1,
   LayoutDashboard,
+  LightbulbIcon,
   Plus,
   Presentation,
 } from "lucide-react";
@@ -53,6 +53,11 @@ const items = [
     url: "/billing",
     icon: CreditCard,
   },
+  {
+    title:"Commit Summarizer",
+    url:"/summarize",
+    icon:LightbulbIcon
+  }
 ];
 
 

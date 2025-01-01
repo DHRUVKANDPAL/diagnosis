@@ -41,6 +41,20 @@ export const getCommitHashes = async (
   }));
 };
 
+export const searchCommitsAndSummarize = async (commitUrl: string,userId:string) => {
+  const [owner, repo, commit,commitHash] = commitUrl.split("/").slice(-4);
+  const githubUrl = `https://github.com/${owner}/${repo}`;
+  const summary=await summarizeCommit(githubUrl,commitHash!);
+  const searchCommits=await db.searchedCommits.create({
+    data: {
+      commitUrl: commitUrl,
+      userId: userId,
+      summary: summary,
+    }
+  })
+  return searchCommits;
+};
+
 // Usage
 export const pollCommits = async (projectId: string) => {
   const { project, githubUrl } = await fetchProjectGithubUrl(projectId);

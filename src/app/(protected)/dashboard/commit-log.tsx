@@ -2,13 +2,28 @@
 import useProject from "@/hooks/use-project";
 import { cn } from "@/lib/utils";
 import { api } from "@/trpc/react";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, Loader2 } from "lucide-react";
 import Link from "next/link";
-import React from "react";
+import React, { useState } from "react";
 
 const CommitLog = () => {
   const { projectId, project } = useProject();
-  const { data: commits } = api.project.getCommits.useQuery({ projectId });
+  const [page, setPage] = useState(1);
+  const { data } = api.project.getCommits.useQuery({
+    projectId,
+    page,
+    pageSize: 10,
+  });
+
+  const { commits, totalPages } = data || {};
+  if (totalPages === null || totalPages === undefined)
+    return (
+      <pre className="shimmer text-xl mt-2 whitespace-pre-wrap leading-6 text-gray-500">
+        <span className="typing-effect">
+          Loading commits...
+        </span>
+      </pre>
+    );
   return (
     <>
       <ul className="space-y-6">
@@ -45,14 +60,89 @@ const CommitLog = () => {
                       </span>
                     </Link>
                   </div>
-                  <span className="font-semibold text-xl">{commit.commitMessage}</span>
-                  <pre className="mt-2 whitespace-pre-wrap text-md leading-6 text-gray-500">{commit.summary}</pre>
+                  <span className="text-xl font-semibold">
+                    {commit.commitMessage}
+                  </span>
+                  <pre className="text-md mt-2 whitespace-pre-wrap leading-6 text-gray-500">
+                    {commit.summary}
+                  </pre>
                 </div>
               </>
             </li>
           );
         })}
       </ul>
+      <div className="h-10 w-full"></div>
+      <div className="sticky bottom-0 bg-transparent py-4 shadow-md">
+        <div className="flex items-center justify-center space-x-4">
+          <button
+            disabled={page === 1}
+            onClick={() => setPage(1)}
+            className="rounded bg-violet-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-violet-300"
+          >
+            {"<<"}
+          </button>
+
+          <button
+            disabled={page === 1}
+            onClick={() => setPage((prev) => prev - 1)}
+            className="rounded bg-violet-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-violet-300"
+          >
+            {"<"}
+          </button>
+
+          {(() => {
+            const visiblePages = [];
+            let startPage = Math.max(1, page - 1);
+            let endPage = Math.min(totalPages!, page + 1);
+
+            if (page === 1) {
+              startPage = 1;
+              endPage = Math.min(3, totalPages!);
+            }
+
+            if (page === totalPages) {
+              startPage = Math.max(totalPages! - 2, 1);
+              endPage = totalPages!;
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+              visiblePages.push(i);
+            }
+
+            return visiblePages.map((visiblePage) => (
+              <button
+                key={visiblePage}
+                onClick={() => setPage(visiblePage)}
+                className={cn(
+                  "px-4 py-2 text-sm font-medium",
+                  page === visiblePage
+                    ? "rounded-full bg-primary text-white"
+                    : "rounded bg-violet-200 text-gray-700 hover:bg-violet-300",
+                )}
+              >
+                {visiblePage}
+              </button>
+            ));
+          })()}
+
+          <button
+            disabled={page === totalPages}
+            onClick={() => setPage((prev) => prev + 1)}
+            className="rounded bg-violet-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-violet-300"
+          >
+            {">"}
+          </button>
+
+          <button
+            disabled={page === totalPages}
+            onClick={() => setPage(totalPages!)}
+            className="rounded bg-violet-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-violet-300"
+          >
+            {">>"}
+          </button>
+        </div>
+      </div>
     </>
   );
 };

@@ -11,15 +11,26 @@ datasource db {
 }
 
 model User {
-    id            String          @id @default(cuid())
-    createdAt     DateTime        @default(now())
-    updatedAt     DateTime        @updatedAt
-    firstName     String?
-    lastName      String?
-    imageUrl      String?
-    emailAddress  String          @unique
-    credits       Int             @default(150)
-    UsertoProject UsertoProject[]
+    id              String            @id @default(cuid())
+    createdAt       DateTime          @default(now())
+    updatedAt       DateTime          @updatedAt
+    firstName       String?
+    lastName        String?
+    imageUrl        String?
+    emailAddress    String            @unique
+    credits         Int               @default(150)
+    searchedCommits searchedCommits[]
+    UsertoProject   UsertoProject[]
+}
+
+model searchedCommits {
+    id        String   @id @default(cuid())
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    commitUrl String
+    summary   String
+    userId    String
+    user      User     @relation(fields: [userId], references: [id])
 }
 
 model Project {
