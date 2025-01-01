@@ -72,7 +72,7 @@ const CommitLog = () => {
           );
         })}
       </ul>
-      <div className="h-10 w-full"></div>
+      <div className="h-10 "></div>
       <div className="sticky bottom-0 bg-transparent py-4 shadow-md">
         <div className="flex items-center justify-center space-x-4">
           <button

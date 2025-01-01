@@ -35,8 +35,8 @@ const CreatePage = () => {
     return true;
   }
   return (
-    <div className="flex h-full items-center justify-center gap-12">
-      <img src="/undraw_github.svg" className="h-56 w-auto"></img>
+    <div className="md:flex h-full items-center justify-center gap-12">
+      <img src="/undraw_github.svg" className="h-56 w-auto "></img>
       <div>
         <div>
           <h1 className="text-2xl font-semibold">Link a Github repository</h1>

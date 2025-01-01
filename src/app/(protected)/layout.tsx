@@ -13,7 +13,7 @@ const SideBarLayout = ({children}: Props) => {
       {/* App Sidebar */}
       <AppSidebar />
 
-      <main className="m-2 w-full">
+      <main className="overflow-x-hidden">
         <div className="flex items-center gap-2 rounded-md border border-sidebar bg-sidebar p-2 px-4 shadow">
           <SidebarTrigger className="-ml-1" />
           {/* <SearchBar/> */}
@@ -22,7 +22,7 @@ const SideBarLayout = ({children}: Props) => {
         </div>
         <div className="h-4"></div>
         {/* main content */}
-        <div className="h-[calc(100vh-6rem)] overflow-y-scroll rounded-md border border-sidebar bg-sidebar p-2 px-4 shadow">
+        <div className="h-[calc(100vh-5rem)] overflow-y-scroll rounded-md border border-sidebar bg-sidebar p-2 px-4 shadow m-auto overflow-x-hidden">
           {children}
         </div>
       </main>

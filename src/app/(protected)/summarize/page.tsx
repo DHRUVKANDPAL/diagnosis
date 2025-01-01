@@ -44,10 +44,10 @@ const SummarizePage = () => {
 
   return (
     <div className="h-full space-y-4">
-      <div className="flex items-center justify-start gap-12 py-4">
+      <div className="md:flex items-center justify-start gap-12 py-4">
         <img
           src="/undraw_artificial-intelligence.svg"
-          className="h-56 w-auto"
+          className=" h-56 w-auto md:block"
         ></img>
         <div>
           <div>
