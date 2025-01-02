@@ -1,4 +1,5 @@
 "use client";
+import { Badge } from "@/components/ui/badge";
 import useProject from "@/hooks/use-project";
 import { cn } from "@/lib/utils";
 import { api } from "@/trpc/react";
@@ -28,6 +29,29 @@ const CommitLog = () => {
     <>
       <ul className="space-y-6">
         {commits?.map((commit, index) => {
+          const processText = (text: string) => {
+            const parts = text.split(/(\*\*.*?\*\*|`.*?`)/);
+            return parts.map((part, index) => {
+              if (part.startsWith("**") && part.endsWith("**")) {
+                return (
+                  <b key={index} className="text-gray-700">
+                    {part.slice(2, -2)}
+                  </b>
+                );
+              } else if (part.startsWith("`") && part.endsWith("`")) {
+                return (
+                  <Badge
+                    variant="secondary"
+                    className="my-0.5 text-sm hover:cursor-pointer hover:bg-gray-200"
+                  >
+                    {part.slice(1, -1)}
+                  </Badge>
+                );
+              } else {
+                return part;
+              }
+            });
+          };
           return (
             <li key={commit.id} className="relative flex gap-x-4">
               <div
@@ -64,7 +88,7 @@ const CommitLog = () => {
                     {commit.commitMessage}
                   </span>
                   <pre className="text-md mt-2 whitespace-pre-wrap leading-6 text-gray-500">
-                    {commit.summary}
+                    {processText(commit.summary)}
                   </pre>
                 </div>
               </>

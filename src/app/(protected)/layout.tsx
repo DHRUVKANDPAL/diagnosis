@@ -13,7 +13,7 @@ const SideBarLayout = ({children}: Props) => {
       {/* App Sidebar */}
       <AppSidebar />
 
-      <main className="overflow-x-hidden">
+      <main className="overflow-x-hidden w-full">
         <div className="flex items-center gap-2 rounded-md border border-sidebar bg-sidebar p-2 px-4 shadow">
           <SidebarTrigger className="-ml-1" />
           {/* <SearchBar/> */}

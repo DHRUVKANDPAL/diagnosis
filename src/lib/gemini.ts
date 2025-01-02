@@ -27,8 +27,7 @@ Do not include parts of the example in your summary.
 It is given only as an example of appropriate comments.`;
   const result = await model.generateContent([prompt,`Please provide detailed pointwise information of the following diff file covering each and every change in the code and how will it improve the codebase: Just use single * for bullet points \n\n${diff}`]);
   const textresult = await result.response.text();
-//   if(textresult!=="")console.log(textresult);
-//   else console.log("No dataaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+
   return textresult;
 };
 

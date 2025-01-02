@@ -1,4 +1,5 @@
 "use client";
+import { Badge } from "@/components/ui/badge";
 import useProject from "@/hooks/use-project";
 import { cn } from "@/lib/utils";
 import { api } from "@/trpc/react";
@@ -28,17 +29,26 @@ const SummarizeLog = () => {
   ];
 
   const processText = (text: string) => {
-    const parts = text.split(/\*\*(.*?)\*\*/);
-    return parts.map((part, index) =>
-      index % 2 === 1 ? (
-        <b key={index} className="text-gray-700">
-          {part}
-        </b>
-      ) : (
-        part
-      ),
-    );
+    const parts = text.split(/(\*\*.*?\*\*|`.*?`)/);
+    return parts.map((part, index) => {
+      if (part.startsWith("**") && part.endsWith("**")) {
+        return (
+          <b key={index} className="text-gray-700">
+            {part.slice(2, -2)} 
+          </b>
+        );
+      } else if (part.startsWith("`") && part.endsWith("`")) {
+        return (
+          <Badge variant="secondary" className="text-sm my-0.5 hover:bg-gray-200 hover:cursor-pointer">
+            {part.slice(1, -1)} 
+          </Badge>
+        );
+      } else {
+        return part;
+      }
+    });
   };
+
 
   return (
     <div className="relative">
