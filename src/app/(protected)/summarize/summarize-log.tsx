@@ -1,20 +1,56 @@
 "use client";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import useProject from "@/hooks/use-project";
 import { cn } from "@/lib/utils";
 import { api } from "@/trpc/react";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, SearchCodeIcon } from "lucide-react";
 import Link from "next/link";
 import React, { useState } from "react";
 
 const SummarizeLog = () => {
   const [page, setPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeSearch, setActiveSearch] = useState("");
   const { data, isLoading } = api.project.getSearchCommits.useQuery({
     page,
     pageSize: 10,
   });
 
   const { searchedCommits, totalPages } = data || {};
+
+  const handleSearch = () => {
+    setActiveSearch(searchQuery);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      handleSearch();
+    }
+  };
+
+  const filteredSearchedCommits = searchedCommits?.filter((commit) => {
+    if (!activeSearch) return true;
+
+    const extractSearchableText = (text: string) => {
+      const regex = /(\*\*.*?\*\*|`.*?`|".*?"|\(.*?\)|\{.*?\}|\[.*?\])/g;
+      return (text.match(regex) || []).map((match) =>
+        match.replace(/^\W+|\W+$/g, ""),
+      );
+    };
+
+    const matchesUrl = commit.commitUrl
+      .toLowerCase()
+      .includes(activeSearch.toLowerCase());
+
+    const searchableSummaryParts = extractSearchableText(commit.summary);
+    const matchesSummary = searchableSummaryParts.some((part) =>
+      part.toLowerCase().includes(activeSearch.toLowerCase()),
+    );
+
+    return matchesUrl || matchesSummary;
+  });
+
   const colors = [
     { background: "FFF3E0", color: "FF9800" },
     { background: "E8F5E9", color: "4CAF50" },
@@ -34,13 +70,16 @@ const SummarizeLog = () => {
       if (part.startsWith("**") && part.endsWith("**")) {
         return (
           <b key={index} className="text-gray-700">
-            {part.slice(2, -2)} 
+            {part.slice(2, -2)}
           </b>
         );
       } else if (part.startsWith("`") && part.endsWith("`")) {
         return (
-          <Badge variant="secondary" className="text-sm my-0.5 hover:bg-gray-200 hover:cursor-pointer">
-            {part.slice(1, -1)} 
+          <Badge key={index}
+            variant="secondary"
+            className="my-0.5 text-sm hover:cursor-pointer hover:bg-gray-200"
+          >
+            {part.slice(1, -1)}
           </Badge>
         );
       } else {
@@ -49,20 +88,36 @@ const SummarizeLog = () => {
     });
   };
 
-
   return (
     <div className="relative">
+      <div className="sticky top-0 z-10 flex w-full items-center justify-center bg-transparent pb-4">
+        <div className="flex w-full max-w-xl items-center justify-center">
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Search commits..."
+            className="w-full rounded border border-violet-300 bg-violet-100 px-4 py-2 text-sm shadow focus:outline-none focus:ring-2 focus:ring-primary"
+          />
+          <Button variant="default" className="ml-4" onClick={handleSearch}>
+            <SearchCodeIcon></SearchCodeIcon>Search{" "}
+          </Button>
+        </div>
+      </div>
       <ul className="space-y-6">
         {isLoading && (
           <pre className="shimmer mt-2 whitespace-pre-wrap text-xl leading-6 text-gray-500">
-            <span className="typing-effect">Loading previously summarized commits...</span>
+            <span className="typing-effect">
+              Loading previously summarized commits...
+            </span>
           </pre>
         )}
-        {searchedCommits?.map((commit, index) => (
+        {filteredSearchedCommits?.map((commit, index) => (
           <li key={commit.id} className="relative flex gap-x-4">
             <div
               className={cn(
-                index === searchedCommits.length - 1 ? "h-6" : "-bottom-6",
+                index === filteredSearchedCommits.length - 1 ? "h-6" : "-bottom-6",
                 "absolute left-0 top-0 flex w-6 justify-center",
               )}
             >
@@ -102,8 +157,8 @@ const SummarizeLog = () => {
           </li>
         ))}
       </ul>
-      <div className="h-10 "></div>
-      <div className="sticky bottom-0 bg-transparent py-4 shadow-md">
+      <div className="h-10"></div>
+      <div className="sticky bottom-0 bg-transparent py-4">
         <div className="flex items-center justify-center space-x-4">
           <button
             disabled={page === 1}

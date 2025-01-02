@@ -39,7 +39,7 @@ const Shimmer = () => {
           </div>
           <pre className="shimmer text-md mt-2 whitespace-pre-wrap leading-6 text-gray-500">
             <span className="typing-effect">
-              AI message generation shimmer here...
+              Generating summary...
             </span>
           </pre>
         </div>

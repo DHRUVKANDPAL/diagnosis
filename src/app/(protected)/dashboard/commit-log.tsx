@@ -1,15 +1,19 @@
 "use client";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import useProject from "@/hooks/use-project";
 import { cn } from "@/lib/utils";
 import { api } from "@/trpc/react";
-import { ExternalLink, Loader2 } from "lucide-react";
+import { ExternalLink, Loader2, SearchCodeIcon } from "lucide-react";
 import Link from "next/link";
 import React, { useState } from "react";
 
 const CommitLog = () => {
   const { projectId, project } = useProject();
   const [page, setPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeSearch, setActiveSearch] = useState("");
+
   const { data } = api.project.getCommits.useQuery({
     projectId,
     page,
@@ -17,18 +21,68 @@ const CommitLog = () => {
   });
 
   const { commits, totalPages } = data || {};
+
+  const handleSearch = () => {
+    setActiveSearch(searchQuery);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      handleSearch();
+    }
+  };
+
+  const filteredCommits = commits?.filter((commit) => {
+    if (!activeSearch) return true;
+
+    const extractSearchableText = (text: string) => {
+      const regex = /(\*\*.*?\*\*|`.*?`|".*?"|\(.*?\)|\{.*?\}|\[.*?\])/g;
+      return (text.match(regex) || []).map((match) =>
+        match.replace(/^\W+|\W+$/g, ""),
+      );
+    };
+
+    const matchesAuthorName = commit.commitAuthorName
+      .toLowerCase()
+      .includes(activeSearch.toLowerCase());
+    const matchesCommitMessage = commit.commitMessage
+      .toLowerCase()
+      .includes(activeSearch.toLowerCase());
+
+    const searchableSummaryParts = extractSearchableText(commit.summary);
+    const matchesSummary = searchableSummaryParts.some((part) =>
+      part.toLowerCase().includes(activeSearch.toLowerCase()),
+    );
+
+    return matchesAuthorName || matchesCommitMessage || matchesSummary;
+  });
+
   if (totalPages === null || totalPages === undefined)
     return (
-      <pre className="shimmer text-xl mt-2 whitespace-pre-wrap leading-6 text-gray-500">
-        <span className="typing-effect">
-          Loading commits...
-        </span>
+      <pre className="shimmer mt-2 whitespace-pre-wrap text-xl leading-6 text-gray-500">
+        <span className="typing-effect">Loading commits...</span>
       </pre>
     );
+
   return (
     <>
+      <div className="sticky top-0 z-10 flex w-full items-center justify-center bg-transparent py-4">
+        <div className="flex w-full max-w-xl items-center justify-center">
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Search commits..."
+            className="w-full rounded border border-violet-300 bg-violet-100 px-4 py-2 text-sm shadow focus:outline-none focus:ring-2 focus:ring-primary"
+          />
+          <Button variant="default" className="ml-4" onClick={handleSearch}>
+            <SearchCodeIcon></SearchCodeIcon>Search{" "}
+          </Button>
+        </div>
+      </div>
       <ul className="space-y-6">
-        {commits?.map((commit, index) => {
+        {filteredCommits?.map((commit, index) => {
           const processText = (text: string) => {
             const parts = text.split(/(\*\*.*?\*\*|`.*?`)/);
             return parts.map((part, index) => {
@@ -41,6 +95,7 @@ const CommitLog = () => {
               } else if (part.startsWith("`") && part.endsWith("`")) {
                 return (
                   <Badge
+                    key={index}
                     variant="secondary"
                     className="my-0.5 text-sm hover:cursor-pointer hover:bg-gray-200"
                   >
@@ -52,11 +107,12 @@ const CommitLog = () => {
               }
             });
           };
+
           return (
             <li key={commit.id} className="relative flex gap-x-4">
               <div
                 className={cn(
-                  index === commits.length - 1 ? "h-6" : "-bottom-6",
+                  index === (commits?.length ?? 0) - 1 ? "h-6" : "-bottom-6",
                   "absolute left-0 top-0 flex w-6 justify-center",
                 )}
               >
@@ -96,9 +152,10 @@ const CommitLog = () => {
           );
         })}
       </ul>
-      <div className="h-10 "></div>
-      <div className="sticky bottom-0 bg-transparent py-4 shadow-md">
-        <div className="flex items-center justify-center space-x-4">
+      <div className="h-10"></div>
+      <div className="sticky bottom-0 bg-transparent py-4  ">
+        <div className="flex items-center justify-center space-x-4 ">
+          {/* Pagination Buttons */}
           <button
             disabled={page === 1}
             onClick={() => setPage(1)}
@@ -106,7 +163,6 @@ const CommitLog = () => {
           >
             {"<<"}
           </button>
-
           <button
             disabled={page === 1}
             onClick={() => setPage((prev) => prev - 1)}
@@ -114,7 +170,6 @@ const CommitLog = () => {
           >
             {"<"}
           </button>
-
           {(() => {
             const visiblePages = [];
             let startPage = Math.max(1, page - 1);
@@ -149,7 +204,6 @@ const CommitLog = () => {
               </button>
             ));
           })()}
-
           <button
             disabled={page === totalPages}
             onClick={() => setPage((prev) => prev + 1)}
@@ -157,7 +211,6 @@ const CommitLog = () => {
           >
             {">"}
           </button>
-
           <button
             disabled={page === totalPages}
             onClick={() => setPage(totalPages!)}
