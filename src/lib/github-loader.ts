@@ -2,6 +2,7 @@ import { GithubRepoLoader } from "@langchain/community/document_loaders/web/gith
 import { Document } from "@langchain/core/documents";
 import { generateEmbedding, summarizeCode } from "./gemini";
 import { db } from "@/server/db";
+import { pusherServer } from "./pusher";
 export const loadGithubRepo = async (
   githubUrl: string,
   githubToken?: string,
@@ -33,7 +34,9 @@ export const loadGithubRepo = async (
         "vercel.json",
       ],
     });
-
+    await pusherServer.trigger("rooms", "logs", {
+      message: `Fetching files from ${githubUrl}`,
+    });
     const docs = [];
     for await (const doc of loader.loadAsStream()) {
       const fileName = doc.metadata.source;
@@ -91,6 +94,9 @@ export const indexGithubRepo = async (
 ) => {
   const docs = await loadGithubRepo(githubUrl, githubToken!);
   const allEmbeddings = await generateEmbeddings(docs);
+  await pusherServer.trigger("rooms", "logs", {
+    message: `Indexing embeddings for ${githubUrl}`,
+  });
   await Promise.allSettled(
     allEmbeddings.map(async (embedding, index) => {
       console.log(`processing ${index} of ${allEmbeddings.length}`);
@@ -111,6 +117,9 @@ export const indexGithubRepo = async (
     `;
     }),
   );
+  await pusherServer.trigger("rooms", "logs", {
+    message: `Completed. Project indexed successfully`,
+  });
 };
 
 const generateEmbeddings = async (docs: Document[]) => {
@@ -119,7 +128,10 @@ const generateEmbeddings = async (docs: Document[]) => {
 
   const results = [];
   for (const doc of docs) {
-    console.log("generating embeddings for", doc.metadata.source);
+    console.log("generating embeddings for ",doc.metadata.source);
+    await pusherServer.trigger("rooms", "logs", {
+      message: `Generating Embeddings for ${doc.metadata.source}`,
+    });
     const summary = await summarizeCode(doc);
     const embedding = await generateEmbedding(summary);
     results.push({

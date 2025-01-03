@@ -5,6 +5,7 @@ import {
   CreditCard,
   LayoutDashboard,
   LightbulbIcon,
+  MonitorCog,
   Plus,
   Presentation,
 } from "lucide-react";
@@ -30,6 +31,7 @@ import { Button } from "@/components/ui/button";
 import useProject from "@/hooks/use-project";
 import useRefetch from "@/hooks/use-refetch";
 import Image from "next/image";
+import { title } from "process";
 
 // Menu items.
 const items = [
@@ -41,7 +43,7 @@ const items = [
   {
     title: "Q&A",
     url: "/qa",
-    icon: Bot,
+    icon: MonitorCog,
   },
   {
     title: "Meetings",
@@ -57,6 +59,11 @@ const items = [
     title:"Commit Summarizer",
     url:"/summarize",
     icon:LightbulbIcon
+  },
+  {
+    title:"RoastBot",
+    url:"/roastbot",
+    icon:Bot
   }
 ];
 
@@ -80,7 +87,7 @@ export function AppSidebar() {
             <SidebarMenu>
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
+                  <SidebarMenuButton tooltip={item.title} asChild>
                     <Link
                       href={item.url}
                       className={cn({
@@ -102,7 +109,7 @@ export function AppSidebar() {
             <SidebarMenu>
               {projects?.map((item) => (
                 <SidebarMenuItem key={item.name}>
-                  <SidebarMenuButton asChild>
+                  <SidebarMenuButton tooltip={item.name} asChild>
                     <div
                       onClick={() => setProjectId(item.id)}
                       className="cursor-pointer"
