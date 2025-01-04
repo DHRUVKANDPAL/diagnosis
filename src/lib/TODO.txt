@@ -1,2 +1,5 @@
 1. jab bhi commit get kr rhe honge toh last 30 commits jo unprocessesed h check krenge aur unke code ko update krke unki summary aur embedding nikal ke RAG model update kr denge
 2. commit ko unke name ke through search kr skte h
+
+
+// search improve 

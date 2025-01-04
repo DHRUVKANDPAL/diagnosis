@@ -5,7 +5,8 @@ import { Card } from "@/components/ui/card";
 import useProject from "@/hooks/use-project";
 import { cn } from "@/lib/utils";
 import { api } from "@/trpc/react";
-import { ExternalLink, Loader2, SearchCodeIcon } from "lucide-react";
+import { set } from "date-fns";
+import { CircleAlert, ExternalLink, Loader2, SearchCodeIcon } from "lucide-react";
 import Link from "next/link";
 import React, { useState } from "react";
 
@@ -14,17 +15,25 @@ const CommitLog = () => {
   const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeSearch, setActiveSearch] = useState("");
+  // const [searchPage, setSearchPage] = useState(1);
 
-  const { data } = api.project.getCommits.useQuery({
+  // const { data } = api.project.getCommits.useQuery({
+  //   projectId,
+  //   page,
+  //   pageSize: 10,
+  // });
+  const {data}=api.project.activeSearchCommits.useQuery({
+    searchQuery:activeSearch,
     projectId,
-    page,
-    pageSize: 10,
+    page:page,
+    pageSize:10
   });
 
-  const { commits, totalPages } = data || {};
+  const { searchedCommits, totalPages } = data || {};
   
 
   const handleSearch = () => {
+    setPage(1);
     setActiveSearch(searchQuery);
   };
 
@@ -33,31 +42,41 @@ const CommitLog = () => {
       handleSearch();
     }
   };
+  let filteredCommits=searchedCommits;
 
-  const filteredCommits = commits?.filter((commit) => {
-    if (!activeSearch) return true;
+  // filteredCommits = commits?.filter((commit) => {
+  //   if (!activeSearch) return true;
 
-    const extractSearchableText = (text: string) => {
-      const regex = /(\*\*.*?\*\*|`.*?`|".*?"|\(.*?\)|\{.*?\}|\[.*?\])/g;
-      return (text.match(regex) || []).map((match) =>
-        match.replace(/^\W+|\W+$/g, ""),
-      );
-    };
+  //   const extractSearchableText = (text: string) => {
+  //     const regex = /(\*\*.*?\*\*|`.*?`|".*?"|\(.*?\)|\{.*?\}|\[.*?\])/g;
+  //     return (text.match(regex) || []).map((match) =>
+  //       match.replace(/^\W+|\W+$/g, ""),
+  //     );
+  //   };
 
-    const matchesAuthorName = commit.commitAuthorName
-      .toLowerCase()
-      .includes(activeSearch.toLowerCase());
-    const matchesCommitMessage = commit.commitMessage
-      .toLowerCase()
-      .includes(activeSearch.toLowerCase());
+  //   const matchesAuthorName = commit.commitAuthorName
+  //     .toLowerCase()
+  //     .includes(activeSearch.toLowerCase());
+  //   const matchesCommitMessage = commit.commitMessage
+  //     .toLowerCase()
+  //     .includes(activeSearch.toLowerCase());
 
-    const searchableSummaryParts = extractSearchableText(commit.summary);
-    const matchesSummary = searchableSummaryParts.some((part) =>
-      part.toLowerCase().includes(activeSearch.toLowerCase()),
-    );
+  //   const searchableSummaryParts = extractSearchableText(commit.summary);
+  //   const matchesSummary = searchableSummaryParts.some((part) =>
+  //     part.toLowerCase().includes(activeSearch.toLowerCase()),
+  //   );
 
-    return matchesAuthorName || matchesCommitMessage || matchesSummary;
-  });
+  //   return matchesAuthorName || matchesCommitMessage || matchesSummary;
+  // });
+  // if(activeSearch){
+  //   const {data}=api.project.activeSearchCommits.useQuery({
+  //     searchQuery:activeSearch,
+  //     projectId,
+  //     page:searchPage,
+  //     pageSize:10
+  //   });
+    
+  // }
 
   if (totalPages === null || totalPages === undefined)
     return (
@@ -65,15 +84,10 @@ const CommitLog = () => {
         <span className="typing-effect">Loading commits...</span>
       </pre>
     );
-  if(totalPages === 0) return (
-    <Card className="flex h-[40vh] flex-col items-center justify-center text-gray-500">
-      <p className="shimmer">No commits found.</p>
-      <p className="shimmer">Select/Add a project to get started.</p>
-    </Card>
-  );
+  
 
   return (
-    <div >
+    <div>
       <div className="sticky top-0 z-10 flex w-full items-center justify-center bg-transparent py-4">
         <div className="flex w-full max-w-xl items-center justify-center">
           <input
@@ -89,7 +103,7 @@ const CommitLog = () => {
           </Button>
         </div>
       </div>
-      <ul className="space-y-6 ">
+      <ul className="space-y-6">
         {filteredCommits?.map((commit, index) => {
           const processText = (text: string) => {
             const parts = text.split(/(\*\*.*?\*\*|`.*?`)/);
@@ -105,7 +119,7 @@ const CommitLog = () => {
                   <Badge
                     key={index}
                     variant="secondary"
-                    className="my-0.5 text-sm break-all hover:cursor-pointer hover:bg-gray-200"
+                    className="my-0.5 break-all text-sm hover:cursor-pointer hover:bg-gray-200"
                   >
                     {part.slice(1, -1)}
                   </Badge>
@@ -117,10 +131,12 @@ const CommitLog = () => {
           };
 
           return (
-            <li key={commit.id} className="relative flex gap-x-4 items-stretch">
+            <li key={commit.id} className="relative flex items-stretch gap-x-4">
               <div
                 className={cn(
-                  index === (commits?.length ?? 0) - 1 ? "h-6" : "-bottom-6",
+                  index === (filteredCommits?.length ?? 0) - 1
+                    ? "h-6"
+                    : "-bottom-6",
                   "absolute left-0 top-0 flex w-6 justify-center",
                 )}
               >
@@ -151,7 +167,7 @@ const CommitLog = () => {
                   <span className="text-xl font-semibold">
                     {commit.commitMessage}
                   </span>
-                  <div className="text-md mt-2 whitespace-pre-wrap  leading-6 text-gray-500 font-mono">
+                  <div className="text-md mt-2 whitespace-pre-wrap font-mono leading-6 text-gray-500">
                     {processText(commit.summary)}
                   </div>
                 </div>
@@ -160,9 +176,17 @@ const CommitLog = () => {
           );
         })}
       </ul>
+      {totalPages === 0 && (
+        <Card className="flex h-[40vh] flex-col items-center justify-center text-gray-500">
+          <p className="shimmer flex items-center text-gray-500">
+            <CircleAlert className="mr-2 h-4 w-4"></CircleAlert> No commits
+            found
+          </p>
+        </Card>
+      )}
       <div className="h-10"></div>
-      <div className="sticky bottom-0 bg-transparent py-4  ">
-        <div className="flex items-center justify-center space-x-4 ">
+      <div className="sticky bottom-0 bg-transparent py-4">
+        <div className="flex items-center justify-center space-x-4">
           {/* Pagination Buttons */}
           <button
             disabled={page === 1}

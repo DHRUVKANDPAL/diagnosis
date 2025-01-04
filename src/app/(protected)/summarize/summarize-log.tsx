@@ -1,10 +1,11 @@
 "use client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import useProject from "@/hooks/use-project";
 import { cn } from "@/lib/utils";
 import { api } from "@/trpc/react";
-import { ExternalLink, SearchCodeIcon } from "lucide-react";
+import { CircleAlert, ExternalLink, SearchCodeIcon } from "lucide-react";
 import Link from "next/link";
 import React, { useState } from "react";
 
@@ -13,6 +14,7 @@ const SummarizeLog = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeSearch, setActiveSearch] = useState("");
   const { data, isLoading } = api.project.getSearchCommits.useQuery({
+    searchQuery: activeSearch,
     page,
     pageSize: 10,
   });
@@ -20,6 +22,7 @@ const SummarizeLog = () => {
   const { searchedCommits, totalPages } = data || {};
 
   const handleSearch = () => {
+    setPage(1);
     setActiveSearch(searchQuery);
   };
 
@@ -29,27 +32,7 @@ const SummarizeLog = () => {
     }
   };
 
-  const filteredSearchedCommits = searchedCommits?.filter((commit) => {
-    if (!activeSearch) return true;
-
-    const extractSearchableText = (text: string) => {
-      const regex = /(\*\*.*?\*\*|`.*?`|".*?"|\(.*?\)|\{.*?\}|\[.*?\])/g;
-      return (text.match(regex) || []).map((match) =>
-        match.replace(/^\W+|\W+$/g, ""),
-      );
-    };
-
-    const matchesUrl = commit.commitUrl
-      .toLowerCase()
-      .includes(activeSearch.toLowerCase());
-
-    const searchableSummaryParts = extractSearchableText(commit.summary);
-    const matchesSummary = searchableSummaryParts.some((part) =>
-      part.toLowerCase().includes(activeSearch.toLowerCase()),
-    );
-
-    return matchesUrl || matchesSummary;
-  });
+  const filteredSearchedCommits = searchedCommits;
 
   const colors = [
     { background: "FFF3E0", color: "FF9800" },
@@ -159,6 +142,11 @@ const SummarizeLog = () => {
           </li>
         ))}
       </ul>
+      {totalPages === 0 && (
+        <Card className="flex h-[40vh] flex-col items-center justify-center text-gray-500">
+          <p className="text-gray-500 shimmer flex items-center"><CircleAlert className="mr-2 h-4 w-4"></CircleAlert> No commits found</p>
+        </Card>
+      )}
       <div className="h-10"></div>
       <div className="sticky bottom-0 bg-transparent py-4">
         <div className="flex items-center justify-center space-x-4">

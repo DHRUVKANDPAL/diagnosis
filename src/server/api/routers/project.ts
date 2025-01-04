@@ -95,6 +95,7 @@ export const projectRouter = createTRPCRouter({
   getSearchCommits: protectedProdcedure
     .input(
       z.object({
+        searchQuery: z.string(),
         page: z.number().min(1).default(1),
         pageSize: z.number().min(1).default(10),
       }),
@@ -106,6 +107,20 @@ export const projectRouter = createTRPCRouter({
       const searchedCommits = await ctx.db.searchedCommits.findMany({
         where: {
           userId: ctx.user.userId!,
+          OR: [
+            {
+              commitUrl: {
+                contains: input.searchQuery,
+                mode: "insensitive",
+              },
+            },
+            {
+              summary: {
+                contains: input.searchQuery,
+                mode: "insensitive",
+              },
+            },
+          ],
         },
         orderBy: {
           createdAt: "desc",
@@ -117,6 +132,20 @@ export const projectRouter = createTRPCRouter({
       const totalCommits = await ctx.db.searchedCommits.count({
         where: {
           userId: ctx.user.userId!,
+          OR: [
+            {
+              commitUrl: {
+                contains: input.searchQuery,
+                mode: "insensitive",
+              },
+            },
+            {
+              summary: {
+                contains: input.searchQuery,
+                mode: "insensitive",
+              },
+            },
+          ],
         },
       });
 
@@ -132,7 +161,7 @@ export const projectRouter = createTRPCRouter({
         projectId: z.string(),
         question: z.string(),
         answer: z.string(),
-        fileReferences:z.any()
+        fileReferences: z.any(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -144,6 +173,94 @@ export const projectRouter = createTRPCRouter({
           fileReferences: input.fileReferences,
           userId: ctx.user.userId!,
         },
-      })
+      });
+    }),
+  activeSearchCommits: protectedProdcedure
+    .input(
+      z.object({
+        searchQuery: z.string(),
+        projectId: z.string(),
+        page: z.number().min(1).default(1),
+        pageSize: z.number().min(1).default(10),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      try {
+        await pollCommits(input.projectId);
+        const { page, pageSize } = input;
+        const skip = (page - 1) * pageSize;
+        // Define both queries as promises
+        const searchedCommitsPromise = ctx.db.commit.findMany({
+          where: {
+            projectId: input.projectId,
+            OR: [
+              {
+                commitAuthorName: {
+                  contains: input.searchQuery,
+                  mode: "insensitive",
+                },
+              },
+              {
+                commitMessage: {
+                  contains: input.searchQuery,
+                  mode: "insensitive",
+                },
+              },
+              {
+                summary: {
+                  contains: input.searchQuery,
+                  mode: "insensitive",
+                },
+              },
+            ],
+          },
+          skip,
+          take: pageSize,
+        });
+
+        const totalCommitsPromise = ctx.db.commit.count({
+          where: {
+            projectId: input.projectId,
+            OR: [
+              {
+                commitAuthorName: {
+                  contains: input.searchQuery,
+                  mode: "insensitive",
+                },
+              },
+              {
+                commitMessage: {
+                  contains: input.searchQuery,
+                  mode: "insensitive",
+                },
+              },
+              {
+                summary: {
+                  contains: input.searchQuery,
+                  mode: "insensitive",
+                },
+              },
+            ],
+          },
+        });
+
+        // Run both queries in parallel using Promise.all
+        const [searchedCommits, totalCommits] = await Promise.all([
+          searchedCommitsPromise,
+          totalCommitsPromise,
+        ]);
+
+        return {
+          searchedCommits,
+          totalCommits,
+          totalPages: Math.ceil(totalCommits / pageSize),
+        };
+      } catch (error) {
+        return {
+          searchedCommits: [],
+          totalCommits: 0,
+          totalPages: 0,
+        };
+      }
     }),
 });

@@ -18,7 +18,7 @@ import { set } from "date-fns";
 import CodeReferences from "./code-references";
 import { api } from "@/trpc/react";
 import { toast } from "sonner";
-import { SaveIcon } from "lucide-react";
+import { CheckCheckIcon, SaveIcon } from "lucide-react";
 
 const AskQuestionCard = () => {
   const { project } = useProject();
@@ -29,8 +29,10 @@ const AskQuestionCard = () => {
     { fileName: string; sourceCode: string; summary: string }[]
   >([]);
   const [answer, setAnswer] = React.useState("");
+  const [isClicked, setIsClicked] = React.useState(false);
   const saveAnswer = api.project.saveAnswer.useMutation();
   const onSubmit = async (e: any) => {
+    setIsClicked(false);
     setAnswer("");
     setFilePreferences([]);
     e.preventDefault();
@@ -62,6 +64,7 @@ const AskQuestionCard = () => {
                 disabled={saveAnswer.isPending}
                 variant="outline"
                 onClick={() => {
+                  if(isClicked) return;
                   saveAnswer.mutate(
                     {
                       answer: answer,
@@ -72,6 +75,7 @@ const AskQuestionCard = () => {
                     {
                       onSuccess: () => {
                         toast.success("Answer saved successfully");
+                        setIsClicked(true);
                       },
                       onError: () => {
                         toast.error("Failed to save answer");
@@ -80,7 +84,7 @@ const AskQuestionCard = () => {
                   );
                 }}
               >
-                <SaveIcon className="mr-2 h-4 w-4"></SaveIcon>Save Answer
+                {isClicked ? <CheckCheckIcon className="mr-2 h-4 w-4 text-green-600"></CheckCheckIcon> : <SaveIcon className="mr-2 h-4 w-4"></SaveIcon>}Save Answer
               </Button>
             </div>
           </DialogHeader>
