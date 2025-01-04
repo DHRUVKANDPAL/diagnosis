@@ -18,7 +18,7 @@ import { set } from "date-fns";
 import CodeReferences from "./code-references";
 import { api } from "@/trpc/react";
 import { toast } from "sonner";
-import { CheckCheckIcon, SaveIcon } from "lucide-react";
+import { CheckCheckIcon, Loader2, SaveIcon } from "lucide-react";
 
 const AskQuestionCard = () => {
   const { project } = useProject();
@@ -84,7 +84,7 @@ const AskQuestionCard = () => {
                   );
                 }}
               >
-                {isClicked ? <CheckCheckIcon className="mr-2 h-4 w-4 text-green-600"></CheckCheckIcon> : <SaveIcon className="mr-2 h-4 w-4"></SaveIcon>}Save Answer
+                {isClicked ? <CheckCheckIcon className="mr-2 h-4 w-4 text-green-600"></CheckCheckIcon> : (saveAnswer.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin"></Loader2> : <SaveIcon className="mr-2 h-4 w-4" />)}Save Answer
               </Button>
             </div>
           </DialogHeader>

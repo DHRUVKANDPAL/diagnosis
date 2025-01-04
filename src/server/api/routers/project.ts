@@ -6,6 +6,7 @@ import {
 } from "../trpc";
 import { pollCommits, searchCommitsAndSummarize } from "@/lib/github";
 import { indexGithubRepo } from "@/lib/github-loader";
+import { pusherServer } from "@/lib/pusher";
 
 export const projectRouter = createTRPCRouter({
   createProject: protectedProdcedure
@@ -165,7 +166,7 @@ export const projectRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      return await ctx.db.question.create({
+      const answers= await ctx.db.question.create({
         data: {
           projectId: input.projectId,
           question: input.question,
@@ -174,6 +175,10 @@ export const projectRouter = createTRPCRouter({
           userId: ctx.user.userId!,
         },
       });
+      await pusherServer.trigger("qa", "new-question", {
+        message: `New question added to project ${input.projectId} : By ${ctx.user.userId}`,
+      });
+      return answers;
     }),
   activeSearchCommits: protectedProdcedure
     .input(
@@ -263,4 +268,19 @@ export const projectRouter = createTRPCRouter({
         };
       }
     }),
+    getQuestions: protectedProdcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      return await ctx.db.question.findMany({
+        where: {
+          projectId: input.projectId,
+        },
+        include: {
+          user: true,
+        },
+        orderBy:{
+          createdAt:"desc"
+        }
+      });
+    })
 });
