@@ -69,7 +69,7 @@ const SummarizeLog = () => {
     return parts.map((part, index) => {
       if (part.startsWith("**") && part.endsWith("**")) {
         return (
-          <b key={index} className="text-gray-700">
+          <b key={index} className="break-all text-gray-700">
             {part.slice(2, -2)}
           </b>
         );
@@ -77,7 +77,7 @@ const SummarizeLog = () => {
         return (
           <Badge key={index}
             variant="secondary"
-            className="my-0.5 text-sm hover:cursor-pointer hover:bg-gray-200"
+            className="my-0.5 text-sm break-all hover:cursor-pointer hover:bg-gray-200"
           >
             {part.slice(1, -1)}
           </Badge>
@@ -117,7 +117,9 @@ const SummarizeLog = () => {
           <li key={commit.id} className="relative flex gap-x-4">
             <div
               className={cn(
-                index === filteredSearchedCommits.length - 1 ? "h-6" : "-bottom-6",
+                index === filteredSearchedCommits.length - 1
+                  ? "h-6"
+                  : "-bottom-6",
                 "absolute left-0 top-0 flex w-6 justify-center",
               )}
             >
@@ -149,7 +151,7 @@ const SummarizeLog = () => {
                     </span>
                   </Link>
                 </div>
-                <pre className="text-md mt-2 whitespace-pre-wrap leading-6 text-gray-500">
+                <pre className="text-md mt-2 whitespace-pre-wrap leading-6 text-gray-500 md:break-keep">
                   {processText(commit.summary)}
                 </pre>
               </div>
@@ -163,7 +165,7 @@ const SummarizeLog = () => {
           <button
             disabled={page === 1}
             onClick={() => setPage(1)}
-            className="rounded bg-violet-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-violet-300"
+            className="hidden rounded bg-violet-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-violet-300 md:block"
           >
             {"<<"}
           </button>
@@ -222,7 +224,7 @@ const SummarizeLog = () => {
           <button
             disabled={page === totalPages}
             onClick={() => setPage(totalPages!)}
-            className="rounded bg-violet-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-violet-300"
+            className="hidden rounded bg-violet-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-violet-300 md:block"
           >
             {">>"}
           </button>

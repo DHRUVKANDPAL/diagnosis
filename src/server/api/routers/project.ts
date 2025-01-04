@@ -83,7 +83,8 @@ export const projectRouter = createTRPCRouter({
         return {
           commits: [],
           totalCommits: 0,
-          totalPages: 0,};
+          totalPages: 0,
+        };
       }
     }),
   SearchCommits: protectedProdcedure
@@ -124,5 +125,25 @@ export const projectRouter = createTRPCRouter({
         totalCommits,
         totalPages: Math.ceil(totalCommits / pageSize),
       };
+    }),
+  saveAnswer: protectedProdcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        question: z.string(),
+        answer: z.string(),
+        fileReferences:z.any()
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      return await ctx.db.question.create({
+        data: {
+          projectId: input.projectId,
+          question: input.question,
+          answer: input.answer,
+          fileReferences: input.fileReferences,
+          userId: ctx.user.userId!,
+        },
+      })
     }),
 });

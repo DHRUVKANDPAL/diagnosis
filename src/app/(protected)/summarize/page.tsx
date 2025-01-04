@@ -61,7 +61,7 @@ const SummarizePage = () => {
               src="/undraw_artificial-intelligence.svg"
               className="h-40 w-auto md:block pl-4 lg:h-56"
             ></img>
-            <div className="w-full max-w-md pr-2">
+            <div className="w-full max-w-md pr-2 pl-6 py-4 md:py-0 md:pl-0">
               <div>
                 <h1 className="text-2xl font-semibold">
                   Link a Github Commit{" "}

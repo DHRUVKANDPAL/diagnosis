@@ -16,6 +16,9 @@ import { readStreamableValue } from "ai/rsc";
 import MDEditor from "@uiw/react-md-editor";
 import { set } from "date-fns";
 import CodeReferences from "./code-references";
+import { api } from "@/trpc/react";
+import { toast } from "sonner";
+import { SaveIcon } from "lucide-react";
 
 const AskQuestionCard = () => {
   const { project } = useProject();
@@ -26,6 +29,7 @@ const AskQuestionCard = () => {
     { fileName: string; sourceCode: string; summary: string }[]
   >([]);
   const [answer, setAnswer] = React.useState("");
+  const saveAnswer = api.project.saveAnswer.useMutation();
   const onSubmit = async (e: any) => {
     setAnswer("");
     setFilePreferences([]);
@@ -45,18 +49,49 @@ const AskQuestionCard = () => {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent data-color-mode="light" className="sm:max-w-[75vw]">
           <DialogHeader>
-            <DialogTitle>
-              <Image src="/logo2.png" alt="logo" width={40} height={40}></Image>
-            </DialogTitle>
+            <div className="flex items-center gap-2">
+              <DialogTitle>
+                <Image
+                  src="/logo2.png"
+                  alt="logo"
+                  width={40}
+                  height={40}
+                ></Image>
+              </DialogTitle>
+              <Button
+                disabled={saveAnswer.isPending}
+                variant="outline"
+                onClick={() => {
+                  saveAnswer.mutate(
+                    {
+                      answer: answer,
+                      projectId: project?.id!,
+                      question: question,
+                      fileReferences: filePreferences,
+                    },
+                    {
+                      onSuccess: () => {
+                        toast.success("Answer saved successfully");
+                      },
+                      onError: () => {
+                        toast.error("Failed to save answer");
+                      },
+                    },
+                  );
+                }}
+              >
+                <SaveIcon className="mr-2 h-4 w-4"></SaveIcon>Save Answer
+              </Button>
+            </div>
           </DialogHeader>
           <MDEditor.Markdown
             source={answer}
-            className=" !h-full max-h-[30vh] max-w-[70vw] overflow-y-scroll"
+            className="!h-full max-h-[30vh] max-w-[70vw] overflow-y-scroll"
           />
           <CodeReferences fileReferences={filePreferences} />
           <Button
             type="button"
-            className=" sm:max-w-[70vw]"
+            className="sm:max-w-[70vw]"
             onClick={() => setOpen(false)}
           >
             Close

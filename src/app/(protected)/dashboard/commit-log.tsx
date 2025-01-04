@@ -22,6 +22,7 @@ const CommitLog = () => {
   });
 
   const { commits, totalPages } = data || {};
+  
 
   const handleSearch = () => {
     setActiveSearch(searchQuery);
@@ -72,7 +73,7 @@ const CommitLog = () => {
   );
 
   return (
-    <>
+    <div >
       <div className="sticky top-0 z-10 flex w-full items-center justify-center bg-transparent py-4">
         <div className="flex w-full max-w-xl items-center justify-center">
           <input
@@ -88,7 +89,7 @@ const CommitLog = () => {
           </Button>
         </div>
       </div>
-      <ul className="space-y-6">
+      <ul className="space-y-6 ">
         {filteredCommits?.map((commit, index) => {
           const processText = (text: string) => {
             const parts = text.split(/(\*\*.*?\*\*|`.*?`)/);
@@ -104,7 +105,7 @@ const CommitLog = () => {
                   <Badge
                     key={index}
                     variant="secondary"
-                    className="my-0.5 text-sm hover:cursor-pointer hover:bg-gray-200"
+                    className="my-0.5 text-sm break-all hover:cursor-pointer hover:bg-gray-200"
                   >
                     {part.slice(1, -1)}
                   </Badge>
@@ -116,7 +117,7 @@ const CommitLog = () => {
           };
 
           return (
-            <li key={commit.id} className="relative flex gap-x-4">
+            <li key={commit.id} className="relative flex gap-x-4 items-stretch">
               <div
                 className={cn(
                   index === (commits?.length ?? 0) - 1 ? "h-6" : "-bottom-6",
@@ -150,9 +151,9 @@ const CommitLog = () => {
                   <span className="text-xl font-semibold">
                     {commit.commitMessage}
                   </span>
-                  <pre className="text-md mt-2 whitespace-pre-wrap leading-6 text-gray-500">
+                  <div className="text-md mt-2 whitespace-pre-wrap  leading-6 text-gray-500 font-mono">
                     {processText(commit.summary)}
-                  </pre>
+                  </div>
                 </div>
               </>
             </li>
@@ -227,7 +228,7 @@ const CommitLog = () => {
           </button>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 
