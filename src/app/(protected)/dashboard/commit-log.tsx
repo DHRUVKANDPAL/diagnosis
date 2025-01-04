@@ -1,6 +1,7 @@
 "use client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import useProject from "@/hooks/use-project";
 import { cn } from "@/lib/utils";
 import { api } from "@/trpc/react";
@@ -63,6 +64,12 @@ const CommitLog = () => {
         <span className="typing-effect">Loading commits...</span>
       </pre>
     );
+  if(totalPages === 0) return (
+    <Card className="flex h-[40vh] flex-col items-center justify-center text-gray-500">
+      <p className="shimmer">No commits found.</p>
+      <p className="shimmer">Select/Add a project to get started.</p>
+    </Card>
+  );
 
   return (
     <>

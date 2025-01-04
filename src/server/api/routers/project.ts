@@ -53,31 +53,38 @@ export const projectRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
-      await pollCommits(input.projectId);
-      const { page, pageSize } = input;
-      const skip = (page - 1) * pageSize;
-      const commits = await ctx.db.commit.findMany({
-        where: {
-          projectId: input.projectId,
-        },
-        orderBy: {
-          commitDate: "desc",
-        },
-        skip,
-        take: pageSize,
-      });
+      try {
+        await pollCommits(input.projectId);
+        const { page, pageSize } = input;
+        const skip = (page - 1) * pageSize;
+        const commits = await ctx.db.commit.findMany({
+          where: {
+            projectId: input.projectId,
+          },
+          orderBy: {
+            commitDate: "desc",
+          },
+          skip,
+          take: pageSize,
+        });
 
-      const totalCommits = await ctx.db.commit.count({
-        where: {
-          projectId: input.projectId,
-        },
-      });
+        const totalCommits = await ctx.db.commit.count({
+          where: {
+            projectId: input.projectId,
+          },
+        });
 
-      return {
-        commits,
-        totalCommits,
-        totalPages: Math.ceil(totalCommits / pageSize),
-      };
+        return {
+          commits,
+          totalCommits,
+          totalPages: Math.ceil(totalCommits / pageSize),
+        };
+      } catch (error) {
+        return {
+          commits: [],
+          totalCommits: 0,
+          totalPages: 0,};
+      }
     }),
   SearchCommits: protectedProdcedure
     .input(z.object({ commitUrl: z.string() }))
