@@ -184,8 +184,8 @@ const CommitLog = () => {
           </p>
         </Card>
       )}
-      <div className="h-10"></div>
-      <div className="sticky bottom-0 bg-transparent py-4">
+      <div className="h-6"></div>
+      <div className=" bg-transparent py-4">
         <div className="flex items-center justify-center space-x-4">
           {/* Pagination Buttons */}
           <button

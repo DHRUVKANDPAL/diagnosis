@@ -13,6 +13,7 @@ import {
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -77,7 +78,9 @@ export function AppSidebar() {
       <SidebarHeader suppressHydrationWarning>
         <div className="flex items-center justify-start gap-1">
           <Image src="/logo2.png" alt="logo" width={40} height={40}></Image>
-          {open && <h1 className="text-2xl font-bold text-primary">Diagnosis</h1>}
+          {open && (
+            <h1 className="text-2xl font-bold text-primary">Diagnosis</h1>
+          )}
         </div>
       </SidebarHeader>
       <SidebarContent suppressHydrationWarning>
@@ -128,23 +131,27 @@ export function AppSidebar() {
                 </SidebarMenuItem>
               ))}
               <div className="h-2"></div>
-              <SidebarMenuItem>
-                <Link href="/create" className="flex items-center gap-2">
-                  {open ? (
-                    <Button size="sm" variant="outline" className="w-fit">
-                      <Plus></Plus> Create Project
-                    </Button>
-                  ) : (
-                    <Button variant="outline" className="w-2">
-                      <Plus></Plus>
-                    </Button>
-                  )}
-                </Link>
-              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+      <SidebarFooter>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton tooltip="Create Project" asChild>
+              <Link
+                href={"/create"}
+                className={cn({
+                  "!bg-primary !text-white": true,
+                })}
+              >
+                <Plus />
+                <span>Create Project</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
     </Sidebar>
   );
 }

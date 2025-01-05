@@ -102,13 +102,14 @@ const AskQuestionCard = () => {
           </Button>
         </DialogContent>
       </Dialog>
-      <Card className="relative col-span-3">
-        <CardHeader> Ask a Question</CardHeader>
+      <Card className="relative col-span-5  lg:col-span-3 ">
+        <CardHeader className="font-medium"> Ask a Question</CardHeader>
         <CardContent>
           <form onSubmit={onSubmit}>
             <Textarea
               placeholder="Which file should I edit to change the home page?"
               value={question}
+              className="min-h-[100px]"
               onChange={(e) => setQuestion(e.target.value)}
             />
             <div className="h-4"></div>

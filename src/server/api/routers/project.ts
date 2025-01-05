@@ -7,6 +7,10 @@ import {
 import { pollCommits, searchCommitsAndSummarize } from "@/lib/github";
 import { indexGithubRepo } from "@/lib/github-loader";
 import { pusherServer } from "@/lib/pusher";
+import { get } from "http";
+import { issue } from "@uiw/react-md-editor";
+import { v2 as cloudinary } from "cloudinary";
+
 
 export const projectRouter = createTRPCRouter({
   createProject: protectedProdcedure
@@ -166,7 +170,7 @@ export const projectRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const answers= await ctx.db.question.create({
+      const answers = await ctx.db.question.create({
         data: {
           projectId: input.projectId,
           question: input.question,
@@ -268,7 +272,7 @@ export const projectRouter = createTRPCRouter({
         };
       }
     }),
-    getQuestions: protectedProdcedure
+  getQuestions: protectedProdcedure
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
       return await ctx.db.question.findMany({
@@ -278,8 +282,83 @@ export const projectRouter = createTRPCRouter({
         include: {
           user: true,
         },
-        orderBy:{
-          createdAt:"desc"
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
+    }),
+  uploadMeetings: protectedProdcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        meetingUrl: z.string(),
+        name: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const meetings = await ctx.db.meeting.create({
+        data: {
+          projectId: input.projectId,
+          meetingUrl: input.meetingUrl,
+          name: input.name,
+          status: "PROCESSING",
+        },
+      });
+      return meetings;
+    }),
+  getMeetings: protectedProdcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      return await ctx.db.meeting.findMany({
+        where: {
+          projectId: input.projectId,
+        },
+        include: {
+          issue: true,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
+    }),
+    deleteMeetings: protectedProdcedure
+    .input(z.object({ meetingId: z.string(),meetingUrl: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      cloudinary.config({
+        cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+        api_key: process.env.CLOUDINARY_API_KEY,
+        api_secret: process.env.CLOUDINARY_API_SECRET,
+      });
+      const parts = input.meetingUrl.split("/");
+      const filenameWithExtension = parts.pop(); 
+      const filename = filenameWithExtension?.split(".")[0];
+      const publicId=`meetings/${filename}`;
+      await cloudinary.api
+        .delete_resources([publicId], {
+          type: "upload",
+          resource_type: "video",
+        })
+        .then((result) => {
+          console.log("Cloudinary Deletion Result:", result);
+        })
+        .catch((error) => {
+          console.error("Error deleting resource from Cloudinary:", error);
+        });
+      return await ctx.db.meeting.delete({
+        where: {
+          id: input.meetingId,
+        },
+      });
+    }),
+    getMeetingById: protectedProdcedure
+    .input(z.object({ meetingId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      return await ctx.db.meeting.findUnique({
+        where: {
+          id: input.meetingId,
+        }
+        ,include: {
+          issue: true
         }
       });
     })

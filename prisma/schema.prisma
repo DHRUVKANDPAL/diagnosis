@@ -2,13 +2,13 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-    provider = "prisma-client-js"
+    provider        = "prisma-client-js"
     previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
-    provider = "postgresql"
-    url      = env("DATABASE_URL")
+    provider   = "postgresql"
+    url        = env("DATABASE_URL")
     extensions = [vector]
 }
 
@@ -37,15 +37,16 @@ model searchedCommits {
 }
 
 model Project {
-    id            String          @id @default(cuid())
-    name          String
-    githubUrl     String
-    createdAt     DateTime        @default(now())
-    updatedAt     DateTime        @updatedAt
-    UsertoProject UsertoProject[]
-    commits       Commit[]
+    id                   String                @id @default(cuid())
+    name                 String
+    githubUrl            String
+    createdAt            DateTime              @default(now())
+    updatedAt            DateTime              @updatedAt
+    UsertoProject        UsertoProject[]
+    commits              Commit[]
     sourceCodeEmbeddings SourceCodeEmbedding[]
-    savedQuestions Question[]
+    savedQuestions       Question[]
+    meetings             Meeting[]
 }
 
 model UsertoProject {
@@ -61,13 +62,13 @@ model UsertoProject {
 }
 
 model SourceCodeEmbedding {
-    id        String   @id @default(cuid())
+    id               String                      @id @default(cuid())
     summaryEmbedding Unsupported("vector(768)")?
-    sourceCode String
-    fileName   String
-    summary    String
-    projectId  String
-    project    Project  @relation(fields: [projectId], references: [id])
+    sourceCode       String
+    fileName         String
+    summary          String
+    projectId        String
+    project          Project                     @relation(fields: [projectId], references: [id])
 }
 
 model Commit {
@@ -85,14 +86,44 @@ model Commit {
 }
 
 model Question {
+    id             String   @id @default(cuid())
+    createdAt      DateTime @default(now())
+    updatedAt      DateTime @updatedAt
+    question       String
+    answer         String
+    fileReferences Json?
+    userId         String
+    user           User     @relation(fields: [userId], references: [id])
+    projectId      String
+    project        Project  @relation(fields: [projectId], references: [id])
+}
+
+model Meeting {
+    id         String        @id @default(cuid())
+    createdAt  DateTime      @default(now())
+    updatedAt  DateTime      @updatedAt
+    name       String
+    meetingUrl String
+    projectId  String
+    project    Project       @relation(fields: [projectId], references: [id])
+    status     MeetingStatus @default(PROCESSING)
+    issue      Issue[]
+}
+
+enum MeetingStatus {
+    PROCESSING
+    COMPLETED
+}
+
+model Issue {
     id        String   @id @default(cuid())
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
-    question  String
-    answer    String
-    fileReferences Json?
-    userId    String
-    user      User     @relation(fields: [userId], references: [id])
-    projectId String
-    project   Project  @relation(fields: [projectId], references: [id])
+    start     String
+    end       String
+    summary   String
+    gist      String
+    headline  String
+    meetingId String
+    meeting   Meeting  @relation(fields: [meetingId], references: [id],onDelete: Cascade)
 }

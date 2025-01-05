@@ -7,6 +7,7 @@ import Link from "next/link";
 import React from "react";
 import CommitLog from "./commit-log";
 import AskQuestionCard from "./ask-question-card";
+import MeetingCard from "./meeting-card";
 
 const DashboardPage = () => {
   const { project } = useProject();
@@ -34,15 +35,15 @@ const DashboardPage = () => {
         </div>
         <div className="h-4"></div>
         <div className="flex items-center gap-4">
-          <Button>Team Members</Button>
-          <Button>Invite Button</Button>
-          <Button>Archive Button</Button>
+          <Button variant={"outline"}>Team Members</Button>
+          <Button variant={"outline"}>Invite Button</Button>
+          <Button variant={"outline"}>Archive Button</Button>
         </div>
       </div>
       <div className="mt-4">
-        <div className="grid grid-cols-5 gap-4 sm:grid-cols-5">
+        <div className="grid grid-cols-5 gap-4 ">
           <AskQuestionCard />
-          Meeting Card 
+          <MeetingCard/>
         </div>
       </div>
       <div className="mt-8"></div>
