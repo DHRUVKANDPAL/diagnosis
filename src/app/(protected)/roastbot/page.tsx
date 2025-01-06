@@ -16,18 +16,28 @@ import { set } from "date-fns";
 import { read } from "fs";
 import { readStreamableValue } from "ai/rsc";
 import { cn } from "@/lib/utils";
+import { Bot, Globe, User } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import MDEditor from "@uiw/react-md-editor";
 
 type Message = {
   role: "user" | "bot";
   content: string;
 };
+type Language = "English" | "Hinglish";
 
 const AskQuestionCard = () => {
   const [loading, setLoading] = React.useState(false);
   const [messages, setMessages] = React.useState<Message[]>([]);
   const [input, setInput] = React.useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
-
+  const [language, setLanguage] = React.useState<Language>("English");
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -39,29 +49,30 @@ const AskQuestionCard = () => {
     e.preventDefault();
     messages.push({ role: "user", content: input });
     setMessages([...messages]);
-    setInput(""); 
+    setInput("");
     setLoading(true);
-    if(messages.length >15) {
+    if (messages.length > 15) {
       const updatedMessages = messages.slice(6);
       setMessages(updatedMessages);
     }
-      
+
     const botMessageIndex = messages.length;
     messages.push({ role: "bot", content: "" });
     setMessages([...messages]);
 
     try {
-      const { output } = await roastBot(input, messages);
+      const { output } = await roastBot(input, messages,language);
       for await (const delta of readStreamableValue(output)) {
         if (delta && messages[botMessageIndex]) {
-          messages[botMessageIndex].content += delta; 
-          setMessages([...messages]); 
+          messages[botMessageIndex].content += delta;
+          setMessages([...messages]);
         }
       }
     } catch (error) {
       console.error("Error generating bot response:", error);
-      if(messages[botMessageIndex]) {
-        messages[botMessageIndex].content = "Error generating bot response. Please try again.";
+      if (messages[botMessageIndex]) {
+        messages[botMessageIndex].content =
+          "Error generating bot response. Please try again.";
       }
       setMessages([...messages]);
     } finally {
@@ -88,7 +99,13 @@ const AskQuestionCard = () => {
         (part.startsWith('"') && part.endsWith('"'))
       ) {
         return (
-          <span key={index} className={cn("font-bold", part.startsWith("#") ? "text-gray-800":"text-gray-700")}>
+          <span
+            key={index}
+            className={cn(
+              "font-bold",
+              part.startsWith("#") ? "text-gray-800" : "text-gray-700",
+            )}
+          >
             {part}
           </span>
         );
@@ -97,13 +114,28 @@ const AskQuestionCard = () => {
     });
   };
 
-
   return (
     <>
-      <div className="flex h-full items-center justify-center bg-gray-100 p-4">
-        <Card className="flex h-full w-full flex-col">
-          <CardHeader>
-            <CardTitle className="text-2xl">RoastBot 🤖</CardTitle>
+      <div className="-mx-[22px] flex h-full items-center justify-center rounded-xl bg-gray-50 sm:m-0 sm:p-4">
+        <Card className="flex h-full w-full flex-col rounded-2xl">
+          <CardHeader className="rounded-2xl p-0">
+            <CardTitle className="rounded-t-2xl bg-red-500 p-4 text-center text-2xl text-white">
+              RoastBot 🤖
+            </CardTitle>
+            <div className="relative p-4">
+              <Select
+                value={language}
+                onValueChange={(value: Language) => setLanguage(value)}
+              >
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Select language" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="English">English</SelectItem>
+                  <SelectItem value="Hinglish">Hinglish</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </CardHeader>
           <CardContent className="flex-grow overflow-hidden">
             <ScrollArea className="h-full">
@@ -114,15 +146,34 @@ const AskQuestionCard = () => {
                     message.role === "user" ? "justify-end" : "justify-start"
                   }`}
                 >
+                  {message.role === "bot" && (
+                    <div className="mr-2 flex h-8 w-8 items-center justify-center rounded-full bg-red-500 p-2">
+                      <Bot className="h-5 w-5 text-white" />
+                    </div>
+                  )}
                   <span
-                    className={`inline-block rounded-lg p-2 pr-4 lg:max-w-[70%] ${
+                    data-color-mode="light"
+                    className={`inline-block max-w-[75%] rounded-lg p-2 pr-4 md:max-w-[70%] ${
                       message.role === "user"
                         ? "bg-primary text-primary-foreground"
-                        : "bg-gray-200 text-black"
+                        : "bg-muted text-black"
                     }`}
                   >
-                    {processText(message.content)}
+                    {/* {processText(message.content)} */}
+                    {message.role === "user" ? (
+                      message.content
+                    ) : (
+                      <MDEditor.Markdown
+                        source={message.content}
+                        style={{ background: "transparent" }}
+                      />
+                    )}
                   </span>
+                  {message.role === "user" && (
+                    <div className="ml-2 mr-2 flex h-8 w-8 items-center justify-center rounded-full bg-blue-500 p-2">
+                      <User className="h-5 w-5 text-white" />
+                    </div>
+                  )}
                 </div>
               ))}
               <div ref={messagesEndRef} />

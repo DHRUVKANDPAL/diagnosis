@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
+import { cn } from "@/lib/utils";
 
 const MeetingCard: React.FC = () => {
   const { project } = useProject();
@@ -42,6 +43,7 @@ const MeetingCard: React.FC = () => {
     maxSize: 20_000_000,
     onDrop: async (acceptedFiles) => {
       if (!project) return;
+      if(!project.id) return;
       setIsUploading(true);
       try {
         const file = acceptedFiles[0];
@@ -80,7 +82,10 @@ const MeetingCard: React.FC = () => {
 
   return (
     <Card
-      className="col-span-5 flex min-h-[300px] flex-col items-center justify-center p-10 lg:col-span-2 lg:min-h-[100px]"
+      className={cn(
+        "col-span-5 flex min-h-[300px] cursor-pointer flex-col items-center justify-center p-10 lg:col-span-2 lg:min-h-[100px]",
+        !project && "pointer-events-none ",
+      )}
       {...getRootProps()}
     >
       {!isUploading && (
@@ -95,7 +100,7 @@ const MeetingCard: React.FC = () => {
             Powered by AI.
           </p>
           <div className="mt-6">
-            <Button disabled={isUploading}>
+            <Button disabled={isUploading || !project}>
               <Upload className="-ml-0.5 mr-1.5 h-5 w-5" />
               Upload Meeting
               <input {...getInputProps()} />

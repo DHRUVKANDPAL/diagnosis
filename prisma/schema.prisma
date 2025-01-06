@@ -55,8 +55,8 @@ model UsertoProject {
     updatedAt DateTime @updatedAt
     projectId String
     userId    String
-    user      User     @relation(fields: [userId], references: [id])
-    project   Project  @relation(fields: [projectId], references: [id])
+    user      User     @relation(fields: [userId], references: [id],onDelete: Cascade)
+    project   Project  @relation(fields: [projectId], references: [id],onDelete: Cascade)
 
     @@unique([projectId, userId])
 }
@@ -68,7 +68,7 @@ model SourceCodeEmbedding {
     fileName         String
     summary          String
     projectId        String
-    project          Project                     @relation(fields: [projectId], references: [id])
+    project          Project                     @relation(fields: [projectId], references: [id], onDelete: Cascade)
 }
 
 model Commit {
@@ -82,7 +82,7 @@ model Commit {
     commitDate         DateTime
     summary            String
     projectId          String
-    project            Project  @relation(fields: [projectId], references: [id])
+    project            Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
 }
 
 model Question {
@@ -95,7 +95,7 @@ model Question {
     userId         String
     user           User     @relation(fields: [userId], references: [id])
     projectId      String
-    project        Project  @relation(fields: [projectId], references: [id])
+    project        Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
 }
 
 model Meeting {
@@ -105,7 +105,7 @@ model Meeting {
     name       String
     meetingUrl String
     projectId  String
-    project    Project       @relation(fields: [projectId], references: [id])
+    project    Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
     status     MeetingStatus @default(PROCESSING)
     issue      Issue[]
 }
@@ -125,5 +125,5 @@ model Issue {
     gist      String
     headline  String
     meetingId String
-    meeting   Meeting  @relation(fields: [meetingId], references: [id],onDelete: Cascade)
+    meeting   Meeting  @relation(fields: [meetingId], references: [id], onDelete: Cascade)
 }

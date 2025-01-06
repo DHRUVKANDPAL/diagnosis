@@ -8,6 +8,9 @@ import React from "react";
 import CommitLog from "./commit-log";
 import AskQuestionCard from "./ask-question-card";
 import MeetingCard from "./meeting-card";
+import DeleteProject from "./delete-project";
+import InviteButton from "./invite-button";
+import TeamMembers from "./team-member";
 
 const DashboardPage = () => {
   const { project } = useProject();
@@ -23,7 +26,7 @@ const DashboardPage = () => {
                 This Project is Linked to{" "}
                 <Link
                   href={project?.githubUrl ?? ""}
-                  className="inline-flex items-center text-white/80 hover:underline"
+                  className="inline-flex items-center break-all text-white/80 hover:underline"
                   target="_blank"
                 >
                   {project?.githubUrl}
@@ -34,20 +37,27 @@ const DashboardPage = () => {
           </div>
         </div>
         <div className="h-4"></div>
-        <div className="flex items-center gap-4">
-          <Button variant={"outline"}>Team Members</Button>
-          <Button variant={"outline"}>Invite Button</Button>
-          <Button variant={"outline"}>Archive Button</Button>
+        <div className="hidden items-center gap-4 sm:flex">
+          <TeamMembers />
+          <InviteButton />
+          <DeleteProject />
+        </div>
+        <div className="flex flex-col w-full items-center justify-center gap-4 sm:hidden">
+          <TeamMembers />
+          <div className="grid grid-cols-2 gap-4 w-full">
+            <InviteButton />
+            <DeleteProject />
+          </div>
         </div>
       </div>
       <div className="mt-4">
-        <div className="grid grid-cols-5 gap-4 ">
+        <div className="grid grid-cols-5 gap-4">
           <AskQuestionCard />
-          <MeetingCard/>
+          <MeetingCard />
         </div>
       </div>
       <div className="mt-8"></div>
-      <CommitLog/>
+      <CommitLog />
     </div>
   );
 };

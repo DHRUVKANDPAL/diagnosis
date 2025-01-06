@@ -10,6 +10,7 @@ import { pusherServer } from "@/lib/pusher";
 import { get } from "http";
 import { issue } from "@uiw/react-md-editor";
 import { v2 as cloudinary } from "cloudinary";
+import { currentUser } from "@clerk/nextjs/server";
 
 
 export const projectRouter = createTRPCRouter({
@@ -164,6 +165,7 @@ export const projectRouter = createTRPCRouter({
     .input(
       z.object({
         projectId: z.string(),
+        name: z.string(),
         question: z.string(),
         answer: z.string(),
         fileReferences: z.any(),
@@ -179,8 +181,9 @@ export const projectRouter = createTRPCRouter({
           userId: ctx.user.userId!,
         },
       });
+      const userData=await currentUser();
       await pusherServer.trigger("qa", "new-question", {
-        message: `New question added to project ${input.projectId} : By ${ctx.user.userId}`,
+        message: `New question added to project "${input.name}" : By ${userData?.firstName} ${userData?.lastName}`,
       });
       return answers;
     }),
@@ -361,5 +364,22 @@ export const projectRouter = createTRPCRouter({
           issue: true
         }
       });
+    }),
+    deleteProject: protectedProdcedure.input(z.object({ projectId: z.string() })).mutation(async ({ ctx, input }) => {
+      return await ctx.db.project.delete({
+        where: {
+          id: input.projectId,
+        },
+      });
+    }),
+    getTeamMembers: protectedProdcedure.input(z.object({ projectId: z.string() })).query(async ({ ctx,input }) => {
+      return await ctx.db.usertoProject.findMany({
+        where: {
+          projectId: input.projectId
+        },
+        include: {
+          user: true
+        }
+      })
     })
 });

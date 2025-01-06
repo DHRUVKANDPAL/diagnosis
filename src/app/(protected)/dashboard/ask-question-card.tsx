@@ -70,6 +70,7 @@ const AskQuestionCard = () => {
                       answer: answer,
                       projectId: project?.id!,
                       question: question,
+                      name: project?.name!,
                       fileReferences: filePreferences,
                     },
                     {

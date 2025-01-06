@@ -31,7 +31,7 @@ const QA = () => {
       pusherClient.subscribe("qa");
   
       pusherClient.bind("new-question", (data: { message: string }) => {
-        toast.success(data.message);
+        // toast.success(data.message);
         refetch();
       });
   
