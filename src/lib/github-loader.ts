@@ -3,6 +3,8 @@ import { Document } from "@langchain/core/documents";
 import { generateEmbedding, summarizeCode } from "./gemini";
 import { db } from "@/server/db";
 import { pusherServer } from "./pusher";
+import { auth } from "@clerk/nextjs/server";
+import { Octokit } from "octokit";
 export const loadGithubRepo = async (
   githubUrl: string,
   githubToken?: string,
@@ -145,3 +147,48 @@ const generateEmbeddings = async (docs: Document[]) => {
   await delay(40000);
   return results;
 };
+
+
+
+
+const getFiles=async(path:string,octokit:Octokit,githubOwner:string,githubRepo:string,acc:number=0)=>{
+  const {data}=await octokit.rest.repos.getContent({
+    owner:githubOwner,
+    repo:githubRepo,
+    path
+  })
+  if(!Array.isArray(data) && data.type==="file"){
+    return acc+1;
+  }
+  if(Array.isArray(data)){
+    let fileCount=0;
+    const directories:string[]=[];
+    for(const item of data){
+      if(item.type==="dir"){
+        directories.push(item.path);
+      }
+      else{
+        fileCount++;
+      }
+    }
+    if(directories.length>0){
+      const directoryCount=await Promise.all(directories.map((dir)=>getFiles(dir,octokit,githubOwner,githubRepo,0)));
+      fileCount+=directoryCount.reduce((acc,count)=>acc+count,0);
+    }
+    return acc+fileCount;
+  }
+  return acc;
+}
+
+export const checkCredits=async(githubUrl:string,githubToken?:string)=>{
+  const octokit = new Octokit({
+    auth: githubToken || process.env.GITHUB_TOKEN,
+  })
+  const githubOwner = githubUrl.split("/")[3];
+  const githubRepo = githubUrl.split("/")[4];
+  if(!githubOwner || !githubRepo){
+    return 0;
+  }
+  const fileCount=await getFiles("",octokit,githubOwner,githubRepo);
+  return fileCount;
+}

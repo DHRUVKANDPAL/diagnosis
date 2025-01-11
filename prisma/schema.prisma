@@ -20,10 +20,24 @@ model User {
     lastName        String?
     imageUrl        String?
     emailAddress    String            @unique
-    credits         Int               @default(150)
+    credits         Int               @default(50)
     searchedCommits searchedCommits[]
     UsertoProject   UsertoProject[]
     savedQuestions  Question[]
+    transactions    Transaction[]
+}
+
+model Transaction {
+    id                String   @id @default(cuid())
+    createdAt         DateTime @default(now())
+    updatedAt         DateTime @updatedAt
+    userId            String
+    orderCreationId   String?
+    razorpayPaymentId String?
+    razorpayOrderId   String?
+    razorpaySignature String?
+    credits           Int
+    user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model searchedCommits {
@@ -55,8 +69,8 @@ model UsertoProject {
     updatedAt DateTime @updatedAt
     projectId String
     userId    String
-    user      User     @relation(fields: [userId], references: [id],onDelete: Cascade)
-    project   Project  @relation(fields: [projectId], references: [id],onDelete: Cascade)
+    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
     @@unique([projectId, userId])
 }
